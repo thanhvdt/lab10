@@ -6,7 +6,10 @@ from load_link import get_google_search_results
 token = "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"
 
 bnb_config = BitsAndBytesConfig(
-    load_in_4bit=False  # Disable 4-bit quantization
+    load_in_4bit=True,
+    bnb_4bit_quant_type="nf4",
+    bnb_4bit_use_double_quant=True,
+    bnb_4bit_compute_dtype=torch.float16
 )
 
 SYSTEM_PROMPT_0 = """
@@ -42,9 +45,10 @@ class VistralChat:
         self.model = AutoModelForCausalLM.from_pretrained(
             'Viet-Mistral/Vistral-7B-Chat',
             token=token,
-            torch_dtype=torch.float32,  # Change to torch.float32 for CPU
-            device_map="cpu",  # Use CPU
+            torch_dtype=torch.bfloat16,  # change to torch.float16 if you're using V100
+            device_map="auto",
             use_cache=True,
+            quantization_config=bnb_config
         )
     def conversation(self, text):
         prompt_class = check_content(text)
